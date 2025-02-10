@@ -2,10 +2,16 @@
 2025-01-17: Download elan + start lean number game
 ⋮⋮⋮⋮⋮⋮⋮⋮⋮⋮⋮
 2025-01-24: Finish number game!
+2025-01-29: Meeting with Shachar
+2025-02-06: Sit down and write.
 
-## Links
-- [mathematics in lean](https://leanprover-community.github.io/mathematics_in_lean/C01_Introduction.html)
-- [lean language reference](https://lean-lang.org/doc/reference/latest/)
+## Current Work
+- [functional programming in lean](https://lean-lang.org/functional_programming_in_lean/hello-world/summary.html)
+- How to use the simplifier better?
+  https://lean-lang.org/doc/reference/latest/The-Simplifier/Invoking-the-Simplifier/
+
+## To Check Out
+- [user widgets](https://lean-lang.org/lean4/doc/examples/widgets.lean.html)
 
 ## Ideas 
 
