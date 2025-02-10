@@ -1,0 +1,10 @@
+name = "interpreter-test"
+version = "0.1.0"
+defaultTargets = ["interpreter-test"]
+
+[[lean_lib]]
+name = "InterpreterTest"
+
+[[lean_exe]]
+name = "interpreter-test"
+root = "Main"
