@@ -8,7 +8,7 @@ variable {n m : ℕ}
 structure Point where
   x : ℕ
   y : ℕ
-deriving Repr
+deriving Repr, DecidableEq
 
 def point (pt : ℕ × ℕ) : Point :=
   ⟨pt.1, pt.2⟩
@@ -46,7 +46,7 @@ lemma card_board : (board n m).card = n * m := by
 lemma card_tiling (tiling : DominoTiling n m) :
   2 * tiling.tiles.card = n * m := by
   have := tiling.tiles.card_disjiUnion (cells ·) tiling.disjoint
-  simp [tiling.union, card_board, card_domino] at this
+  simp only [tiling.union, card_board, card_domino, Finset.sum_const, smul_eq_mul] at this
   omega
 
 -- classification of dominos
@@ -179,3 +179,11 @@ theorem puzzle (tiling : DominoTiling 10 10) :
   have card_htiles : (htiles tiling).card = 25 := by omega
   have := x_parity_tiling tiling
   simp [card_htiles, Nat.ModEq] at this
+
+def points (tiles : Finset Domino) : Finset Point := tiles.biUnion cells
+
+theorem puzzle_2 (tiling : DominoTiling 10 10) :
+  (htiles tiling).card ≠ (vtiles tiling).card := by
+  by_contra
+  let all_points := board 10 10 |>.filter fun pt => pt.x % 2 = 0
+  have _ : (points (htiles tiling)).card = 25 :=
