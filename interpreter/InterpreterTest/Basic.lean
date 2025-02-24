@@ -15,8 +15,8 @@ abbrev Val : Ty → Type
 instance : Repr (Val ty) where
   reprPrec v _ :=
     match ty with
-    | Ty.int => let v : Int := v; repr v
-    | Ty.bool => let v : Bool := v; repr v
+    | Ty.int => repr (v : Int)
+    | Ty.bool => repr (v : Bool)
 
 abbrev VarTypes : Type := HashMap String Ty
 
