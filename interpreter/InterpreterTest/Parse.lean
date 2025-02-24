@@ -3,7 +3,9 @@ import InterpreterTest.Ast
 abbrev ParseInput := List Char
 
 inductive Error : Type where
-  deriving Repr
+  | ExpectedMinus : Error
+  | ExpectedNat : Error
+  deriving Repr, BEq
 
 /--
 An optional value α, with additional errors emitted and where
