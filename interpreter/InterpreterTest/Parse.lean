@@ -206,6 +206,17 @@ def char : Parser (Option Char) := fun input =>
   | [] => ParseResult.success none []
   | c :: cs => ParseResult.success (some c) cs
 
+@[simp]
+theorem char_empty : char [] = .success none [] := rfl
+
+@[simp]
+theorem char_cons
+: char (h :: t) = .success (some h) t := rfl
+
+@[simp]
+theorem char_isSuccess : (char input).isSuccess :=
+  by cases input; repeat simp
+
 def sequence (condition : Char → Option α)
 : Parser (List α) := inner
 where
