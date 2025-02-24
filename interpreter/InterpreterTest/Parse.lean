@@ -18,6 +18,9 @@ structure ParseResult (α : Type) : Type where
   errorsNotNil : value = none → errors ≠ []
   deriving Repr
 
+instance [BEq α] : BEq (ParseResult α) :=
+  ⟨fun a b => a.value == b.value && a.rest == b.rest && a.errors == b.errors⟩
+
 @[simp] def Parser ret := ParseInput → ParseResult ret
 
 namespace ParseResult
