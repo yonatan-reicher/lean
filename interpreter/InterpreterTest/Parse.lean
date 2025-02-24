@@ -5,7 +5,7 @@ abbrev ParseInput := List Char
 inductive Error : Type where
   | ExpectedMinus : Error
   | ExpectedNat : Error
-  deriving Repr, BEq
+  deriving Repr, BEq, DecidableEq
 
 /--
 An optional value α, with additional errors emitted and where
@@ -16,7 +16,7 @@ structure ParseResult (α : Type) : Type where
   rest : ParseInput
   errors : List Error
   errorsNotNil : value = none → errors ≠ []
-  deriving Repr
+  deriving Repr, DecidableEq
 
 instance [BEq α] : BEq (ParseResult α) :=
   ⟨fun a b => a.value == b.value && a.rest == b.rest && a.errors == b.errors⟩
