@@ -54,6 +54,7 @@ namespace ParseResult
     cases h : success value rest
     simp_all
 
+  @[simp]
   theorem isSuccess_fromErrors {α errors rest h}
   : isSuccess (@fromErrors α errors rest h) = false := by
     unfold fromErrors isSuccess
@@ -61,78 +62,109 @@ namespace ParseResult
     simp_all
 
   @[simp]
+  theorem isSuccess_isSome {h : isSuccess result}
+  : result.value.isSome = true := h
+
+  @[simp]
+  theorem not_isSuccess_isSome {h : isSuccess result = false}
+  : result.value.isSome = false := h
+
+  @[simp]
+  theorem isSome_isNone {a : Option α}
+  : a.isSome = true ↔ a.isNone = false := by
+    cases a; repeat' simp
+
+  @[simp]
+  theorem isSuccess_isNone {h : isSuccess result}
+  : result.value.isNone = false := by simp_all [isSuccess]
+
+  @[simp]
+  theorem not_isSuccess_isNone {h : isSuccess result = false}
+  : result.value.isNone = true := by simp_all [isSuccess]
+
+  @[simp]
+  theorem isNone {_ : a.isNone}
+  : a = none := by simp_all
+
+  @[simp]
+  theorem isSome {_ : a.isSome}
+  : ∃ v, a = some v := by cases a; repeat' simp_all
+
+  @[simp]
+  theorem isSuccess_value {h : isSuccess result}
+  : ∃ v, value result = some v := by simp_all
+
+  @[simp]
+  theorem not_isSuccess_value {h : isSuccess result = false}
+  : value result = none := by simp_all
+
+  @[simp]
   theorem errors_eq_nil : errors result = [] → result.isSuccess = true := by
-    by_contra
-    simp
+    intro h_eq_nil
+    false_or_by_contra
+    suffices _ : result.errors ≠ [] by contradiction
+    apply result.errorsNotNil
+    simp_all
 
-  theorem not_success (h : !isSuccess self) : self.value.isNone :=
-    by simp at h; simp_all
+  def get (self : ParseResult α) (h : self.isSuccess) :=
+    self.value.get (by simp_all)
 
-  def map : ParseResult a -> (a -> b) -> ParseResult b
-    | { value := none, errors := e, rest := r, .. }, _ =>
-      fromErrors e r (by simp_all)
-    | { value := some value, rest := rest, .. }, f => success (f value) rest
+  def map (self : ParseResult a) (f : a -> b) : ParseResult b :=
+    if h : self.isSuccess = true then
+      success (f (self.get h)) self.rest
+    else
+      fromErrors self.errors self.rest (self.errorsNotNil (by simp_all))
 
-  theorem map_not_isSuccess
-  (self : ParseResult a) (f : a -> b) (h : isSuccess self = false)
-  : (self.map f).isSuccess = false := by
-    rcases self
+  @[simp]
+  theorem map_isSuccess {f : α -> β}
+  : (map self f).isSuccess = self.isSuccess := by
+    cases h : self.isSuccess
+    repeat' simp_all [map]
+
+  @[simp]
+  theorem isSuccess_map {f : α -> β} {h : isSuccess self}
+  : self.map f = success (f (self.get h)) self.rest := by
     simp_all [map]
 
-  theorem map_isSuccess_eq_success
-  (self : ParseResult a) (f : a -> b) (h : isSuccess self)
-  : self.map f = success (f <| self.value.get (by simp_all)) self.rest := by
-    rcases self with ⟨value⟩
-    unfold map
-    unfold isSuccess at h
-    simp at h
-    cases value
-    . contradiction
-    . simp_all
+  @[simp]
+  theorem not_isSuccess_map {f : α -> β} {h : isSuccess self = false}
+  : self.map f = fromErrors self.errors self.rest (self.errorsNotNil (by simp_all)) := by
+    simp_all [map]
 
-  theorem map_isSuccess
-  (self : ParseResult a) (f : a -> b) (h : isSuccess self)
-  : (self.map f).isSuccess := by simp_all
+  def prependErrors
+  (self : ParseResult α)
+  (errors : List Error)
+  : ParseResult α :=
+    { self with
+      errors := errors ++ self.errors
+      errorsNotNil := by simp_all [self.errorsNotNil] }
 
   def andThen (self : ParseResult α) (f : (α × ParseInput) → ParseResult β)
   : ParseResult β :=
-    match h : self.value with
-    | some value =>
-      let next := f (value, self.rest)
-      let allErrors := self.errors ++ next.errors
-      have : next.value.isNone → allErrors ≠ [] := fun _ =>
-        have : next.errors ≠ [] := by simp_all
-        by simp [this, allErrors]
-      { value := next.value
-        rest := next.rest
-        errors := allErrors
-        errorsNotNil := by assumption
-      }
-    | none =>
-      have : self.errors ≠ [] := by simp_all
+    if h : self.isSuccess then
+      f (self.get h, self.rest)
+      |>.prependErrors self.errors
+    else 
+      have : self.errors ≠ [] := by simp_all [self.errorsNotNil]
       fromErrors self.errors self.rest (h := this)
       
-  theorem andThen_not_isSuccess
+  theorem not_isSuccess_andThen
   (self: ParseResult α)
   (notSuccess : self.isSuccess = false)
   (f : (α × ParseInput) → ParseResult β)
-  : (self.andThen f).isSuccess = false := by
-    rcases self with ⟨value⟩
-    have : value = none := by simp_all
+  : ∃ h, self.andThen f = fromErrors self.errors self.rest h := by
+    have : self.value = none := by simp_all
+    rcases self
+    simp at this
     subst this
-    unfold andThen
-    simp
+    simp_all [andThen]
       
-  theorem andThen_isSuccess
+  theorem isSuccess_andThen
   (self: ParseResult α)
-  (notSuccess : self.isSuccess)
+  (h : self.isSuccess)
   (f : (α × ParseInput) → ParseResult β)
-  : (self.andThen f).isSuccess = (f (self.value.get (by simp_all), self.rest)).isSuccess := by
-    rcases self with ⟨value⟩
-    cases value
-    . exact Bool.noConfusion notSuccess
-    . unfold andThen
-      simp_all
+  : (let next := f (self.get h, self.rest)
+     self.andThen f = next.prependErrors self.errors) := by simp_all [andThen]
 
 end ParseResult
 
@@ -141,43 +173,79 @@ namespace Parser
   def success (val : α) : Parser α :=
     fun input => ParseResult.success val input
 
-  def fromError (error : Error) : Parser α :=
-    fun input => ParseResult.fromError error input
+  def fromErrors (errors : List Error) (h : errors ≠ []) : Parser α :=
+    fun input => ParseResult.fromErrors errors input h
 
   abbrev run (parser : Parser α) (input : ParseInput) : ParseResult α :=
     parser input
+
+  def map (self : Parser α) (f : α -> β) : Parser β :=
+    fun input => self |>.run input |>.map f
+
+  /-
+  @[simp]
+  theorem map_isSuccess {f : α -> β} {h : (run self input).isSuccess}
+  : (map self f).run input = self.run input |>.map f := by
+  -/
 
   def andThen (first : Parser a) (second : a -> Parser b) : Parser b :=
     fun input =>
       let firstResult := first input
       firstResult.andThen fun (value, rest) => second value rest
-      
-  theorem andThen_isSuccess
-  (first : Parser a) (second : a -> Parser b) (input : ParseInput)
-  (h : first.run input |>.isSuccess)
-  : ((first.andThen second).run input).isSuccess = (second (first.run input |>.value.get (by simp_all)).value input).isSome := by
-    simp_all
 
+  def or (first : Parser α) (second : Parser α) : Parser α := fun input =>
+    if (first input).isSuccess then
+      first input
+    else
+      second input
+      
 end Parser
 
-def parse_sequence (condition : Char → Option α)
-: Parser (List α) := fun input =>
+def char : Parser (Option Char) := fun input =>
   match input with
-  | [] => ParseResult.success [] []
-  | c :: cs =>
-    if let Option.some x := condition c then
-      cs |> Parser.run (
-        Parser.success x |>.andThen fun x =>
-        parse_sequence condition
-      )
-    else
-      ParseResult.failure
+  | [] => ParseResult.success none []
+  | c :: cs => ParseResult.success (some c) cs
 
-def parse_literal (str : String) : ParseResult Ast := by
-  sorry
+def sequence (condition : Char → Option α)
+: Parser (List α) := inner
+where
+  inner : ParseInput -> ParseResult (List α)
+    | [] => ParseResult.success [] []
+    | c :: cs =>
+      if let some a := condition c then
+        inner cs |>.map (a :: .)
+      else
+        ParseResult.success [] cs
 
-example : parse_literal "42" = some (Ast.val 42) := by
-  sorry
+def nat : Parser Nat :=
+  sequence (Option.filter Char.isDigit ∘ some)
+  |>.map List.asString
+  |>.andThen fun str => match str.toNat? with
+    | some n => .success n
+    | none => .fromError Error.ExpectedNat
+
+def int : Parser Int :=
+  (minus.andThen fun () => nat.map fun n => -(Int.ofNat n))
+  |>.or (plus.andThen fun () => nat.map Int.ofNat)
+  |>.or (nat.map Int.ofNat)
+  where
+    minus : Parser Unit := char |>.andThen fun c =>
+      if c == '-' then .success () else .fromError Error.ExpectedMinus
+    plus : Parser Unit := char |>.andThen fun c =>
+      if c == '+' then .success () else .fromError Error.ExpectedMinus
+
+def literal : Parser Ast :=
+  int
+  |>.map Ast.val
+
+-- instance : BEq Ast := ⟨fun a b => true⟩
+-- instance : Repr Ast := ⟨fun a b => ""⟩
+-- TODO: Why can't the solver find the type-class instances for Ast? How do I
+-- import them from their file?
+-- ANSWER: I need to import the file that contains the instances.
+#eval literal.run "42".toList
+#eval ParseResult.success (Ast.val 42) []
+example : literal.run "42".toList == .success (Ast.val 42) [] := by decide
 
 def parse (str : String) : Option Ast := sorry
   
