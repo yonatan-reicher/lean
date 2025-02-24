@@ -246,14 +246,8 @@ def int : Parser Int :=
       if c == '+' then .success () else .fromError Error.ExpectedMinus
 
 def literal : Parser Ast :=
-  int
-  |>.map Ast.val
+  int.map Ast.val
 
--- instance : BEq Ast := ⟨fun a b => true⟩
--- instance : Repr Ast := ⟨fun a b => ""⟩
--- TODO: Why can't the solver find the type-class instances for Ast? How do I
--- import them from their file?
--- ANSWER: I need to import the file that contains the instances.
 #eval literal.run "42".toList
 #eval ParseResult.success (Ast.val 42) []
 example : literal.run "42".toList == .success (Ast.val 42) [] := by decide
