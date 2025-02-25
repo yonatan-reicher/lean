@@ -233,7 +233,7 @@ where
       if let some a := condition c then
         inner cs |>.map (a :: .)
       else
-        ParseResult.success [] cs
+        ParseResult.success [] (c :: cs)
 
 def nat : Parser Nat :=
   sequence (Option.filter Char.isDigit ∘ some)
