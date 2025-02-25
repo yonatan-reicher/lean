@@ -33,6 +33,10 @@ namespace ParseResult
       errors := []
       errorsNotNil := by simp }
 
+  @[simp]
+  theorem success_rest {value: α} {rest}
+  : (success value rest).rest = rest := rfl
+
   def fromErrors (errors : List Error) (rest : ParseInput) (h : errors ≠ [])
   : ParseResult α :=
     { value := none
@@ -106,15 +110,18 @@ namespace ParseResult
     apply result.errorsNotNil
     simp_all
 
-  @[simp]
   def get (self : ParseResult α) (h : self.isSuccess) :=
     self.value.get (by simp_all)
 
-  @[simp]
   theorem get_eq_get! {h : isSuccess (self : ParseResult α)} [Inhabited α]
   : self.get h = self.value.get! := by
     unfold get
     rw [Option.get_eq_get!]
+
+  @[simp]
+  theorem get_success
+  {result: α} {rest} {h}
+  : (success result rest).get h = result := rfl
 
   def map (self : ParseResult a) (f : a -> b) : ParseResult b :=
     if h : self.isSuccess = true then
@@ -177,34 +184,59 @@ end ParseResult
 
 namespace Parser
 
+  abbrev run (parser : Parser α) (input : ParseInput) : ParseResult α :=
+    parser input
+
   def success (val : α) : Parser α :=
     fun input => ParseResult.success val input
+
+  @[simp]
+  theorem run_success
+  {val : α} {input}
+  : run (success val) input = .success val input := rfl
 
   def fromErrors (errors : List Error) (h : errors ≠ []) : Parser α :=
     fun input => ParseResult.fromErrors errors input h
 
-  abbrev run (parser : Parser α) (input : ParseInput) : ParseResult α :=
-    parser input
+  @[simp]
+  theorem run_fromErrors
+  {α} {errors} {h}
+  : run (@fromErrors α errors h) input = .fromErrors errors input h := rfl
 
   def map (self : Parser α) (f : α -> β) : Parser β :=
     fun input => self |>.run input |>.map f
 
-  /-
   @[simp]
-  theorem map_isSuccess {f : α -> β} {h : (run self input).isSuccess}
-  : (map self f).run input = self.run input |>.map f := by
-  -/
+  theorem run_map {f : α -> β}
+  : run (map self f) input = (run self input).map f := rfl
 
   def andThen (first : Parser a) (second : a -> Parser b) : Parser b :=
     fun input =>
       let firstResult := first input
       firstResult.andThen fun (value, rest) => second value rest
 
+  @[simp]
+  theorem run_andThen
+  {f : α -> Parser β}
+  : run (self.andThen f) input = (
+      let firstResult := run self input
+      firstResult.andThen (fun (value, rest) => f value rest)
+    ) := rfl
+
   def or (first : Parser α) (second : Parser α) : Parser α := fun input =>
     if (first input).isSuccess then
       first input
     else
       second input
+
+  @[simp]
+  theorem run_or {first : Parser α} {second : Parser α}
+  : run (first.or second) input = (
+      if (first input).isSuccess then
+        first input
+      else
+        second input
+    ) := rfl
       
 end Parser
 
@@ -260,7 +292,6 @@ theorem sequence_cons_true
 : sequence cond (head :: tail) = .success (a :: as) rest := by
   unfold sequence at *
   simp_all [sequence.inner]
-  rfl
 
 @[simp]
 theorem sequence_cons_false
