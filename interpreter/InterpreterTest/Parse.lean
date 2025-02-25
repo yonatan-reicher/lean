@@ -106,8 +106,15 @@ namespace ParseResult
     apply result.errorsNotNil
     simp_all
 
+  @[simp]
   def get (self : ParseResult α) (h : self.isSuccess) :=
     self.value.get (by simp_all)
+
+  @[simp]
+  theorem get_eq_get! {h : isSuccess (self : ParseResult α)} [Inhabited α]
+  : self.get h = self.value.get! := by
+    unfold get
+    rw [Option.get_eq_get!]
 
   def map (self : ParseResult a) (f : a -> b) : ParseResult b :=
     if h : self.isSuccess = true then
