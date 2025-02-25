@@ -235,6 +235,41 @@ where
       else
         ParseResult.success [] (c :: cs)
 
+@[simp]
+theorem sequence_empty {cond: Char -> Option α}
+: sequence cond [] = .success [] [] := rfl
+
+@[simp]
+theorem sequence_isSuccess
+{cond : Char -> Option α} {input}
+: (sequence cond input).isSuccess := by
+  -- sequence cond (head :: tail) depends on sequence cond tail so we use 
+  -- induction.
+  induction input
+  case nil => simp
+  case cons h t ih =>
+    -- split by cases to go into both parts of the if.
+    cases h_cond : cond h
+    repeat simp_all [sequence, sequence.inner]
+
+@[simp]
+theorem sequence_cons_true
+{cond: Char -> Option α} {head} {tail}
+(cond_head : cond head = some a)
+(h : sequence cond tail = .success as rest)
+: sequence cond (head :: tail) = .success (a :: as) rest := by
+  unfold sequence at *
+  simp_all [sequence.inner]
+  rfl
+
+@[simp]
+theorem sequence_cons_false
+{cond : Char -> Option α} {head} {tail}
+(cond_head : cond head = none)
+: sequence cond (head :: tail) = .success [] (head :: tail) := by
+  unfold sequence at *
+  simp_all [sequence.inner]
+
 def nat : Parser Nat :=
   sequence (Option.filter Char.isDigit ∘ some)
   |>.map List.asString
