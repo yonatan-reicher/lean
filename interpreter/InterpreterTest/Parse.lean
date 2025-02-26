@@ -17,15 +17,11 @@ Notice that successful results can still have errors. Motivation: you might be
 able to return something just so the rest of the parsing can continue without
 completely stopping.
 -/
-structure ParseResult (α : Type) : Type where
-  value : Option α
-  rest : ParseInput
-  errors : List Error
-  errorsNotNil : value = none → errors ≠ []
+--a sars a
+inductive ParseResult (α : Type) : Type where
+  | success (value : α) (rest : ParseInput) (errors : List Error) : ParseResult α
+  | failure (rest : ParseInput) (errors : List Error) {h : errors ≠ []} : ParseResult α
   deriving Repr, DecidableEq
-
-instance [BEq α] : BEq (ParseResult α) :=
-  ⟨fun a b => a.value == b.value && a.rest == b.rest && a.errors == b.errors⟩
 
 @[simp] def Parser ret := ParseInput → ParseResult ret
 
