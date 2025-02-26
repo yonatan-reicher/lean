@@ -5,7 +5,7 @@ abbrev ParseInput := List Char
 inductive Error : Type where
   | ExpectedMinus : Error
   | ExpectedNat : Error
-  deriving Repr, BEq, DecidableEq
+  deriving Repr, DecidableEq
 
 /--
 An optional value α, with additional errors emitted and where
