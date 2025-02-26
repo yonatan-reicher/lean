@@ -1,5 +1,8 @@
 import InterpreterTest.Ast
 
+/--
+Input for parsers is just a list of characters.
+-/
 abbrev ParseInput := List Char
 
 inductive Error : Type where
@@ -8,8 +11,11 @@ inductive Error : Type where
   deriving Repr, DecidableEq
 
 /--
-An optional value α, with additional errors emitted and where
-the rest of the input.
+Either a successful result or a failure.
+Both carry the rest of the input that they didn't eat up along with them.
+Notice that successful results can still have errors. Motivation: you might be
+able to return something just so the rest of the parsing can continue without
+completely stopping.
 -/
 structure ParseResult (α : Type) : Type where
   value : Option α
@@ -32,6 +38,14 @@ namespace ParseResult
       rest := rest
       errors := []
       errorsNotNil := by simp }
+  
+  /-
+  On implementing theorems for properties:
+  I like working with @[simp] theorems, it makes life easy. The trick is to
+  make sure that you give the right simp theorems. @[simp] theorems should
+  partially evaluate an expression, towards some normal form.
+  In our case, for ParseResult, the normal form is either success or failure.
+  -/
 
   @[simp]
   theorem success_rest {value: α} {rest}
