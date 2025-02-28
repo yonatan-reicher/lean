@@ -20,7 +20,7 @@ completely stopping.
 --a sars a
 inductive ParseResult (α : Type) : Type where
   | success (value : α) (rest : ParseInput) (errors : List Error) : ParseResult α
-  | failure (rest : ParseInput) (errors : List Error) {h : errors ≠ []} : ParseResult α
+  | failure (rest : ParseInput) (errors : List Error) (h : errors ≠ []) : ParseResult α
   deriving Repr, DecidableEq
 
 @[simp] def Parser ret := ParseInput → ParseResult ret
