@@ -13,3 +13,7 @@ scope = "leanprover-community"
 
 [[lean_lib]]
 name = "Interpreter"
+
+[[lean_exe]]
+name = "interpreter"
+root = "Main"
