@@ -12,7 +12,7 @@ abbrev Val : Ty → Type
   | Ty.int => Int
   | Ty.bool => Bool
 
-instance : Repr (Val ty) where
+instance {ty : Ty} : Repr (Val ty) where
   reprPrec v _ :=
     match ty with
     | Ty.int => repr (v : Int)
@@ -42,10 +42,11 @@ def VarValues.empty : VarValues ∅ :=
     let name_not_in_empty := HashMap.not_mem_empty (a:=name)
     absurd name_in_empty name_not_in_empty
 
-def VarValues.get (values : VarValues types) (name : String) {h : name ∈ types} : Val types[name] :=
+def VarValues.get {types} (values : VarValues types) (name : String) {h : name ∈ types} : Val types[name] :=
   values name
 
 def VarValues.insert
+    {types ty}
     (values : VarValues types)
     (var : String)
     (value : Val ty)
@@ -66,20 +67,20 @@ def VarValues.insert
       (congrArg Val h_eq).mp ret
 
 inductive Expr : Ty → VarTypes → Type where
-  | val : Val ty → Expr ty types
-  | var :
+  | val {ty types} : Val ty → Expr ty types
+  | var {types}:
     (name: String) →
     {h_name_in_types : name ∈ types} →
     Expr types[name] types
-  | add : Expr Ty.int types → Expr Ty.int types → Expr Ty.int types
-  | let_ :
+  | add {types}: Expr Ty.int types → Expr Ty.int types → Expr Ty.int types
+  | let_ {var_type types ty} :
     (var: String) →
     Expr var_type types →
     Expr ty (types.insert var var_type) →
     Expr ty types
 deriving Repr
 
-def eval : Expr ty types → VarValues types → Val ty
+def eval {ty types}: Expr ty types → VarValues types → Val ty
   | .val v, _ => v
   | Expr.var name, values => values.get name
   | .add e1 e2, values =>
