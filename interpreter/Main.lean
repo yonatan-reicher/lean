@@ -1,4 +1,4 @@
-import InterpreterTest
+import Interpreter
 
 open Std
 

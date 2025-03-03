@@ -1,4 +1,4 @@
-import InterpreterTest.Ast
+import Interpreter.Ast
 
 /--
 Input for parsers is just a list of characters.
