@@ -4,7 +4,6 @@ keywords = ["math"]
 defaultTargets = ["Interpreter"]
 
 [leanOptions]
-pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 autoImplicit = false
 
 [[require]]
