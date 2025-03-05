@@ -1,0 +1,9 @@
+[submodule "yuval/Polymorphisms"]
+	path = yuval/Polymorphisms
+	url = https://www.github.com/YuvalFilmus/Polymorphisms
+[submodule "yuval/Domino"]
+	path = yuval/Domino
+	url = https://github.com/YuvalFilmus/Domino.git
+[submodule "yuval/Periodicity2"]
+	path = yuval/Periodicity2
+	url = https://github.com/YuvalFilmus/Periodicity2.git
