@@ -1,3 +1,16 @@
+# Welcome to the Lean House
+
+This repo is where I do my Lean research.
+
+## Project Structure
+
+- `yuval/` - Yuval Filmus's Lean code, as git sub-modules.
+- `domino/` - A lean project where I mess around with Filmus's lean
+  proof-solution of a simple puzzle about covering a board with domino tiles.
+- `sandbox/` - A lean project to mess around with proofs and Mathlib.
+- `work-log.md`
+- `typeclasses.md`
+
 ## Links
 
 - [team slack](https://app.slack.com/client/T0230D11NCD/D0894M50YKB)
