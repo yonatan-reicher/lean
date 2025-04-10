@@ -7,3 +7,6 @@
 [submodule "yuval/Periodicity2"]
 	path = yuval/Periodicity2
 	url = https://github.com/YuvalFilmus/Periodicity2.git
+[submodule "lean-tutorial"]
+	path = elad-lean-tutorial
+	url = https://github.com/Eladkay/lean-tutorial
