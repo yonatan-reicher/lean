@@ -3,7 +3,7 @@
 	url = https://www.github.com/YuvalFilmus/Polymorphisms
 [submodule "yuval/Domino"]
 	path = yuval/Domino
-	url = https://github.com/YuvalFilmus/Domino.git
+	url = https://github.com/yonatan-reicher/lean-domino.git
 [submodule "yuval/Periodicity2"]
 	path = yuval/Periodicity2
 	url = https://github.com/YuvalFilmus/Periodicity2.git
